@@ -150,7 +150,7 @@ elif page == "💬 Chat Assistant":
                 
                 try:
                     with st.spinner("Thinking..."):
-                        response = requests.post(f"{API_BASE_URL}/chat", json={"query": user_input}, timeout=30)
+                        response = requests.post(f"{API_BASE_URL}/chat", json={"query": user_input}, timeout=60)
                     
                     if response.status_code == 200:
                         result = response.json()
@@ -225,3 +225,39 @@ elif page == "📊 System Info":
     
     for endpoint in endpoints:
         st.write(endpoint)
+# Add headers for better compatibility
+def make_request(url, **kwargs):
+    headers = {
+        'User-Agent': 'Streamlit-App/1.0',
+        'Accept': 'application/json',
+    }
+    if 'headers' in kwargs:
+        kwargs['headers'].update(headers)
+    else:
+        kwargs['headers'] = headers
+    return requests.get(url, **kwargs)
+
+# DEBUG SECTION - Add this temporarily
+st.write("**Debug Info:**")
+st.write(f"Backend URL: {API_BASE_URL}")
+
+if st.button("🔬 Debug Backend"):
+    st.write("Testing backend connection...")
+    
+    # Test root endpoint
+    try:
+        response = requests.get(f"{API_BASE_URL}/", timeout=30)
+        st.success(f"✅ Root endpoint works: {response.status_code}")
+        st.json(response.json())
+    except Exception as e:
+        st.error(f"❌ Root endpoint failed: {e}")
+    
+    # Test health endpoint
+    try:
+        response = requests.get(f"{API_BASE_URL}/health", timeout=30)
+        st.success(f"✅ Health endpoint works: {response.status_code}")
+        st.json(response.json())
+    except Exception as e:
+        st.error(f"❌ Health endpoint failed: {e}")
+
+st.write("---")  # Separator line
