@@ -12,7 +12,8 @@ st.set_page_config(
 )
 
 # Simple API configuration - no secrets needed for local development
-API_BASE_URL = "http://localhost:8000"
+import os
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 st.title("🏢 IAI Solution Invoice Reimbursement System")
 st.write("AI-powered invoice analysis with Google Gemini")
