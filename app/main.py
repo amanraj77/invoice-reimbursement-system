@@ -13,9 +13,7 @@ from app.utils.logger import logger
 app = FastAPI(
     title="IAI Solution Invoice Reimbursement System",
     description="AI-powered invoice analysis and RAG chatbot",
-    version="1.0.0",
-    docs_url="/docs" if os.getenv("DEBUG", "false").lower() == "true" else None,
-    redoc_url="/redoc" if os.getenv("DEBUG", "false").lower() == "true" else None
+    version="1.0.0"
 )
 
 # CORS middleware
@@ -31,15 +29,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request timing middleware
-@app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
-    return response
-
 # Initialize services
 try:
     invoice_analyzer = InvoiceAnalyzer()
@@ -53,7 +42,7 @@ except Exception as e:
 @app.on_event("startup")
 async def startup_event():
     logger.info("Invoice Reimbursement System starting...")
-    os.makedirs("/app/data", exist_ok=True)
+    # No directory creation needed - use in-memory storage
     logger.info("System ready!")
 
 @app.get("/")
@@ -61,8 +50,7 @@ async def root():
     return {
         "message": "IAI Solution Invoice Reimbursement System",
         "status": "running",
-        "version": "1.0.0",
-        "environment": os.getenv("ENVIRONMENT", "production")
+        "version": "1.0.0"
     }
 
 @app.post("/analyze-invoices")
@@ -84,7 +72,7 @@ async def analyze_invoices(
         if not invoices_zip.filename.lower().endswith('.zip'):
             raise HTTPException(400, "Invoices must be ZIP file")
         
-        # Check file sizes (smaller limits for free tier)
+        # Check file sizes
         policy_content = await policy_file.read()
         invoices_content = await invoices_zip.read()
         
@@ -134,7 +122,6 @@ async def health_check():
     return {
         "status": overall_status,
         "services": services_status,
-        "environment": os.getenv("ENVIRONMENT", "production"),
         "version": "1.0.0"
     }
 
